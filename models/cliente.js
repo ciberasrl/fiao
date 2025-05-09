@@ -37,7 +37,7 @@ const Cliente = db.define("cliente", {
     allowNull: false,
   },
   currentQr: {
-    type: DataTypes.STRING(MAX),
+    type: DataTypes.STRING(200),
     allowNull: false,
   },
   statusId: {
