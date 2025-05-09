@@ -1,4 +1,4 @@
-import { Colmadero } from "../../models/relaciones.js";
+import Colmadero from "../../models/colmadero.js";
 import { v4 as uuidv4 } from "uuid";
 
 const getColmadero = async (req, res) => {

@@ -11,4 +11,4 @@ const Status = db.define("status", {
     allowNull: false,
   },
 });
-export default Status;
+export default Status; 

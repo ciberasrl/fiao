@@ -1,4 +1,4 @@
-import { Status } from "../../models/relaciones.js";
+import Status from "../../models/status.js";
 import { v4 as uuidv4 } from "uuid";
 
 const getStatus = async (req, res) => {
