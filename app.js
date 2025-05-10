@@ -13,9 +13,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Middleware
-app.use(`/api/${process.env.VERSION}/`, statusRouter);
-app.use(`/api/${process.env.VERSION}/`, colmaderoRouter);
-app.use(`/api/${process.env.VERSION}/`, clienteRouter);
+app.use("/api/status", statusRouter);
+app.use("/api/colmadero", colmaderoRouter);
+app.use("/api/cliente", clienteRouter);
 
 app.use("/", NotFund);
 
