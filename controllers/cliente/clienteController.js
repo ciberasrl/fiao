@@ -51,6 +51,7 @@ const postCliente = async (req, res) => {
       uuidColmadero,
       uuid: uuidv4(),
       token: uuidv4(),
+      statusId: 2,
       uuidQr,
       currentQr: `/getInfoCliente/${uuidQr}`,
     });

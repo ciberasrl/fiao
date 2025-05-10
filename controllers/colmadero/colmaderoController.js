@@ -20,12 +20,12 @@ const getColmadero = async (req, res) => {
 const postColmadero = async (req, res) => {
   try {
     // name, email, password, status_id
-    const { name, email, password, status_id } = req.body;
+    const { name, email, password } = req.body;
     const newColmadero = await Colmadero.create({
       name,
       email,
       password,
-      statusId: status_id,
+      statusId: 2,
       uuid: uuidv4(),
       token: uuidv4(),
     });
@@ -54,4 +54,28 @@ const updateNameColmadero = async (req, res) => {
   }
 };
 
-export default { getColmadero, postColmadero, updateNameColmadero };
+const postActivarColmadero = async (req, res) => {
+  try {
+    const uuid = req.params.uuid;
+    await Colmadero.update({ statusId: 1 }, { where: { uuid } }).then(
+      (result) => {
+        if (result[0] === 0) {
+          return res.status(404).json({ mensaje: "Colmadero no encontrado" });
+        }
+        res.status(200).json({ mensaje: "Colmadero activado" });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al activar el colmadero",
+      error: error.message,
+    });
+  }
+};
+
+export default {
+  getColmadero,
+  postColmadero,
+  updateNameColmadero,
+  postActivarColmadero,
+};
