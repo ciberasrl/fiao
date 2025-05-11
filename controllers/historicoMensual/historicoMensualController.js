@@ -63,6 +63,42 @@ const actualizarHistoricoMensual = async (req, res) => {
   }
 };
 
+const obtenerUltimos4Meses = async (req, res) => {
+  try {
+    // Obtengo el uuidColmadero de la cookie
+    const { uuidColmadero } = req.cookies.uuidColmadero;
+
+    if (!uuidColmadero) {
+      return res.status(400).json({ error: "Se requiere el uuidColmadero" });
+    }
+
+    // Buscar al colmadero
+    const colmadero = await Colmadero.findOne({
+      where: { uuid: uuidColmadero },
+    });
+
+    // Verifico que el colmadero exista
+    if (!colmadero) {
+      return res.status(404).json({ error: "Colmadero no encontrado" });
+    }
+
+    // Obtener los últimos 4 registros del colmadero
+    const registros = await HistoricoMensual.findAll({
+      where: { uuidColmadero },
+      order: [["fecha", "DESC"]],
+      limit: 4,
+    });
+
+    return res.json({
+      message: "Últimos 4 registros del colmadero",
+      registros,
+    });
+  } catch (error) {
+    console.error("Error al obtener los registros:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
 export default {
   actualizarHistoricoMensual,
   obtenerUltimos4Meses,
