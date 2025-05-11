@@ -143,23 +143,64 @@ const getInfoClienteQr = async (req, res) => {
   }
 };
 
-//-------------------------------------------------------------------------------------
-
 const getClientes = async (req, res) => {
   try {
-    const clientes = await Cliente.findAll();
+    const uuidColmadero = req.cookies.uuidColmadero;
+
+    const colmadero = await Colmadero.findOne({
+      where: { uuid: uuidColmadero },
+    });
+
+    if (!colmadero) {
+      return res.status(404).json({ mensaje: "Colmadero no encontrado" });
+    }
+
+    const page = parseInt(req.params.page) || 1;
+    const limit = parseInt(req.params.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Total de clientes
+    const total = await Cliente.count({ where: { uuidColmadero } });
+
+    // Obtener los clientes paginados
+    const clientes = await Cliente.findAll({
+      where: { uuidColmadero },
+      limit,
+      offset,
+      include: [
+        {
+          model: DeudaCliente,
+          attributes: ["totalDebito"],
+        },
+      ],
+    });
 
     if (clientes.length === 0) {
       return res.status(404).json({ mensaje: "No se encontraron clientes" });
     }
 
-    res.status(200).json({ mensaje: "Clientes encontrados", data: clientes });
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
+
+    res.status(200).json({
+      mensaje: "Clientes encontrados",
+      clientes: clientes,
+      meta: {
+        total,
+        page,
+        totalPages,
+        hasMore,
+      },
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al obtener los clientes", error: error.message });
+    res.status(500).json({
+      mensaje: "Error al obtener los clientes",
+      error: error.message,
+    });
   }
 };
+
+//-------------------------------------------------------------------------------------
 
 const getClienteByUuid = async (req, res) => {
   try {
