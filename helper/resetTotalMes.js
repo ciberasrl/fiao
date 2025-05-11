@@ -16,7 +16,7 @@ const resetTotalMes = () => {
       }
     },
     {
-      timezone: "America/Santo_Domingo", // 👈 Aquí se ajusta la zona horaria
+      timezone: "America/Santo_Domingo", 
     }
   );
 };
