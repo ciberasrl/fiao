@@ -1,12 +1,60 @@
 import Colmadero from "../../models/colmadero.js";
 import { v4 as uuidv4 } from "uuid";
 
-/**
- * @description Obtiene todos los colmaderos registrados en la base de datos.
- * @route GET /api/colmadero
- * @returns {Object[]} Lista de colmaderos o mensaje de error si no se encuentran.
- */
-const getColmadero = async (req, res) => {
+const getNameColmadero = async (req, res) => {
+  try {
+    // Obtener el UUID del colmadero de las cookies
+    // Este UUID se crea al iniciar sesión y se guarda en la cookie
+    const uuid = req.cookies.uuid;
+
+    // Verfico si el UUID está presente en las cookies
+    if (!uuid) {
+      return res.status(400).json({
+        mensaje: "UUID no proporcionado en la cookie",
+      });
+    }
+    // Busco el colmadero en la base de datos utilizando el UUID
+    const colmadero = await Colmadero.findOne({
+      where: {
+        uuid,
+      },
+    });
+    // Verifico si el colmadero existe
+    if (!colmadero) {
+      return res.status(404).json({ mensaje: "Colmadero no encontrado" });
+    }
+    // Verifico si el colmadero está activo (statusId: 1)
+    if (colmadero.statusId !== 1) {
+      return res.status(403).json({ mensaje: "Colmadero no está activo" });
+    }
+    //Si ha pasado todas las verificaciones, devuelvo el nombre del colmadero
+    return res.status(200).json({
+      mensaje: "Colmadero encontrado",
+      data: { name: colmadero.name },
+    });
+  } catch (error) {
+    console.error("Error en getNameColmadero:", error.message);
+    return res.status(500).json({ mensaje: "Error interno del servidor" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const getColmaderos = async (req, res) => {
   try {
     const comaderos = await Colmadero.findAll();
 
@@ -104,8 +152,9 @@ const postActivarColmadero = async (req, res) => {
 
 // Exportar las funciones para su uso en las rutas
 export default {
-  getColmadero,
+  getColmaderos,
   postColmadero,
   updateNameColmadero,
   postActivarColmadero,
+  getNameColmadero,
 };
