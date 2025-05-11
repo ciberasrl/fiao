@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import connectiondb from "./config/db.js";
+import resetTotalMes from "./helper/resetTotalMes.js";
 
 dotenv.config();
 
@@ -20,6 +21,10 @@ const startServer = async () => {
 
     await connectiondb.sync({ alter: false });
     console.log(chalk.green("✅ Base de datos sincronizada"));
+
+    //Helper para actualizar el totalMes a 0 cada mes
+    resetTotalMes();
+    
 
     app.listen(port, () => {
       console.log(
