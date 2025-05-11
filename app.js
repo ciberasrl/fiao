@@ -5,6 +5,8 @@ import NotFund from "./controllers/404.js";
 import statusRouter from "./routers/status/statusRouter.js";
 import colmaderoRouter from "./routers/colmaderos/colmaderoRouter.js";
 import clienteRouter from "./routers/clientes/clienteRouter.js";
+import "./models/realciones.js";
+
 
 dotenv.config();
 
