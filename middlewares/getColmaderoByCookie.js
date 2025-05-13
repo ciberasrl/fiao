@@ -15,6 +15,7 @@ const getUuidColmadero = async (req, res, next) => {
     //Busco el colmadero en la base de datos
     const colmadero = await Colmadero.findOne({
       where: { uuid: uuidColmadero },
+      attributes: ["uuid"],
     });
 
     //Verifico si el colmadero existe
@@ -25,7 +26,7 @@ const getUuidColmadero = async (req, res, next) => {
     }
 
     // Lo agregas al objeto request para que esté disponible en la siguiente función
-    req.uuidColmadero = uuidColmadero;
+    req.colmadero = colmadero.dataValues;
 
     next(); // Llama a la siguiente función en la cadena de middleware
   } catch (error) {
