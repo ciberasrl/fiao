@@ -111,7 +111,6 @@ const postCliente = async (req, res) => {
       mensaje:
         "Ocurrió un error al registrar el cliente. Verifique los datos enviados.",
       data: null,
-      camposEsperados: ["name", "email", "numberPhone", "uuidColmadero"],
       error: error.message,
     });
   }
