@@ -8,12 +8,11 @@ const getNombreScoreCliente = async (req, res) => {
   //Se debe hacer una secuencia de 4 en 4
 
   try {
-    //Obtenermos el uuid del colmadero de la url
-    const { uuid } = req.params;
-
-    //Busco el colmadero en la base de datos
+    //Obtengo el uuid
+    const uuidColmadero = req.uuidColmadero;
+    //Verifico si el uuidColmadero existe
     const colmadero = await Colmadero.findOne({
-      where: { uuid },
+      where: { uuid: uuidColmadero },
     });
 
     //Verifico si el colmadero existe
@@ -24,7 +23,7 @@ const getNombreScoreCliente = async (req, res) => {
     //Busco los ultimos clientes del colmadero
     //Limito a 4 clientes
     const clientes = await Cliente.findAll({
-      where: { uuidColmadero: uuid },
+      where: { uuidColmadero },
       limit: 4,
       order: [["createdAt", "DESC"]],
       attributes: ["name", "reliability"],
@@ -47,7 +46,8 @@ const getNombreScoreCliente = async (req, res) => {
 const postCliente = async (req, res) => {
   try {
     // name, email, numberPhone, uuidColmadero
-    const { name, email, numberPhone, uuidColmadero } = req.body;
+    const uuidColmadero = req.uuidColmadero;
+    const { name, email, numberPhone } = req.body;
 
     // Verificar si el uuidColmadero existe
     const colmadero = await Colmadero.findOne({
@@ -143,9 +143,9 @@ const getInfoClienteQr = async (req, res) => {
   }
 };
 
-const getClientes = async (req, res) => {
+const getClientesByUuidColmadero = async (req, res) => {
   try {
-    const uuidColmadero = req.cookies.uuidColmadero;
+    const uuidColmadero = req.uuidColmadero;
 
     const colmadero = await Colmadero.findOne({
       where: { uuid: uuidColmadero },
@@ -200,46 +200,8 @@ const getClientes = async (req, res) => {
   }
 };
 
-//-------------------------------------------------------------------------------------
-
-const getClienteByUuid = async (req, res) => {
-  try {
-    const { uuid } = req.params;
-    const cliente = await Cliente.findOne({
-      where: { uuid },
-    });
-    if (!cliente) {
-      return res.status(404).json({ mensaje: "Cliente no encontrado" });
-    }
-    res.status(200).json({ mensaje: "Cliente encontrado", data: cliente });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al obtener el cliente", error: error.message });
-  }
-};
-
-const getClientesByUuidColmadero = async (req, res) => {
-  try {
-    const { uuidColmadero } = req.params;
-    const clientes = await Cliente.findAll({
-      where: { uuidColmadero },
-    });
-    if (clientes.length === 0) {
-      return res.status(404).json({ mensaje: "No se encontraron clientes" });
-    }
-    res.status(200).json({ mensaje: "Clientes encontrados", data: clientes });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al obtener el cliente", error: error.message });
-  }
-};
-
 export default {
   getNombreScoreCliente,
-  getClientes,
-  getClienteByUuid,
   getClientesByUuidColmadero,
   postCliente,
   getInfoClienteQr,
