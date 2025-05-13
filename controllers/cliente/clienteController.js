@@ -190,11 +190,42 @@ const postClientesByUuidColmadero = async (req, res) => {
   }
 };
 
+const postClienteByName = async (req, res) => {
+  try {
+    const { name } = req.body;
 
+    const colmadero = req.colmadero;
+
+    const cliente = await Cliente.findOne({
+      where: { name, uuidColmadero: colmadero.uuid },
+      include: [
+        {
+          model: DeudaCliente,
+          attributes: ["totalDebito"],
+        },
+      ],
+    });
+
+    if (!cliente) {
+      return res.status(404).json({ mensaje: "Cliente no encontrado" });
+    }
+
+    res.status(200).json({
+      mensaje: "Cliente encontrado",
+      cliente,
+    });
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener el cliente",
+      error: error.message,
+    });
+  }
+};
 
 export default {
   getNombreScoreCliente,
   postClientesByUuidColmadero,
   postCliente,
   getInfoClienteQr,
+  postClienteByName,
 };
