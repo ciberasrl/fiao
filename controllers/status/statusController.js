@@ -1,74 +1,75 @@
 import Status from "../../models/status.js";
 import { v4 as uuidv4 } from "uuid";
 
-/**
- * @description Obtiene todos los estados disponibles en la base de datos.
- * @route GET /api/status
- * @returns {Object[]} Lista de estados o mensaje de error si no se encuentran.
- */
 const getStatus = async (req, res) => {
   try {
+    // Obtengo todos los estados desde la base de datos
     const statuses = await Status.findAll();
 
+    // Verifico si se encontraron estados
     if (statuses.length === 0) {
-      return res.status(404).json({ mensaje: "No se encontraron estados" });
+      return res.status(404).json({
+        success: false,
+        mensaje: "No se encontraron estados.",
+        data: null,
+      });
     }
 
-    res.status(200).json({ mensaje: "Estados encontrados", data: statuses });
+    // Respuesta exitosa con los estados encontrados
+    return res.status(200).json({
+      success: true,
+      mensaje: "Estados encontrados correctamente.",
+      data: statuses,
+    });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener los estados", error });
+    console.error("Error al obtener los estados:", error.message);
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al obtener los estados.",
+      error: error.message,
+      data: null,
+    });
   }
 };
 
-/**
- * @description Crea un nuevo estado con el nombre recibido en el cuerpo de la solicitud.
- * @route POST /api/status
- * @param {string} nombre - Nombre del nuevo estado
- * @returns {Object} Estado recién creado o mensaje de error.
- */
 const postStatus = async (req, res) => {
   try {
     const { nombre } = req.body;
 
+    // Verifico que el nombre esté presente en la solicitud
+    if (!nombre) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "El nombre del estado es obligatorio.",
+        data: null,
+        camposEsperados: ["nombre en el body de la solicitud"],
+      });
+    }
+
+    // Creo un nuevo estado en la base de datos
     const newStatus = await Status.create({
       status: nombre,
       uuid: uuidv4(),
     });
 
-    res.status(201).json({ mensaje: "Estado creado", data: newStatus });
+    // Respuesta exitosa con el nuevo estado creado
+    return res.status(201).json({
+      success: true,
+      mensaje: "Estado creado correctamente.",
+      data: newStatus,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al crear el estado", error: error.message });
+    console.error("Error al crear el estado:", error.message);
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al crear el estado.",
+      error: error.message,
+      data: null,
+    });
   }
 };
-
-/**
- * @description Elimina un estado por su ID (comentado para uso futuro).
- * @route DELETE /api/status/:id
- * @param {number} id - ID del estado a eliminar
- * @returns {string} Mensaje de éxito o error.
- */
-// const deleteStatus = async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const status = await Status.findByPk(id);
-
-//     if (!status) {
-//       return res.status(404).json({ mensaje: "Estado no encontrado" });
-//     }
-
-//     await status.destroy();
-//     res.status(200).json({ mensaje: "Estado eliminado" });
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ mensaje: "Error al eliminar el estado", error: error.message });
-//   }
-// };
 
 export default {
   getStatus,
   postStatus,
-  // deleteStatus, // Descomenta si deseas activar esta funcionalidad
 };
