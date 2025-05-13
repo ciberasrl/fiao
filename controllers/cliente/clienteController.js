@@ -4,18 +4,9 @@ import DeudaCliente from "../../models/deudaCliente.js";
 import { v4 as uuidv4 } from "uuid";
 
 const getNombreScoreCliente = async (req, res) => {
-  //Devueve el nombre y el score de los ultimos 4 clientes
-  //Se debe hacer una secuencia de 4 en 4
-
   try {
-    //Obtengo el uuid
     const colmadero = req.colmadero;
-    //Verifico si el uuidColmadero existe
 
-    console.log("Colmadero en el get nombre: ", colmadero);
-
-    //Busco los ultimos clientes del colmadero
-    //Limito a 4 clientes
     const clientes = await Cliente.findAll({
       where: { uuidColmadero: colmadero.uuid },
       limit: 4,
@@ -23,51 +14,68 @@ const getNombreScoreCliente = async (req, res) => {
       attributes: ["name", "reliability"],
     });
 
-    //Verifico si hay clientes
     if (!clientes.length) {
-      return res.status(404).json({ mensaje: "No se encontraron clientes" });
+      return res.status(404).json({
+        success: false,
+        mensaje: "No se encontraron clientes registrados recientemente.",
+        data: [],
+        hasMore: false,
+      });
     }
 
-    res.status(200).json({ mensaje: "Clientes encontrados", data: clientes });
+    return res.status(200).json({
+      success: true,
+      mensaje: "Clientes recuperados correctamente.",
+      data: clientes,
+      hasMore: clientes.length === 4,
+    });
   } catch (error) {
-    console.error("Error en getNombreScoreCliente:", error.message);
-    res
-      .status(500)
-      .json({ mensaje: "Error al obtener los clientes", error: error.message });
+    return res.status(500).json({
+      success: false,
+      mensaje:
+        "Error inesperado al recuperar los nombres y score de los clientes.",
+      data: [],
+      hasMore: false,
+      error: error.message,
+    });
   }
 };
 
 const postCliente = async (req, res) => {
   try {
-    // name, email, numberPhone, uuidColmadero
     const uuidColmadero = req.uuidColmadero;
     const { name, email, numberPhone } = req.body;
 
-    // Verificar si el uuidColmadero existe
     const colmadero = await Colmadero.findOne({
       where: { uuid: uuidColmadero },
     });
 
     if (!colmadero) {
-      return res.status(400).json({ mensaje: "El Colmadero no existe." });
+      return res.status(400).json({
+        success: false,
+        mensaje: "El colmadero proporcionado no existe.",
+        data: null,
+      });
     }
 
-    // Verificar si ya el correo existe
-    const clienteExistente = await Cliente.findOne({
-      where: { email },
-    });
-
-    if (clienteExistente) {
-      return res.status(400).json({ mensaje: "El correo ya existe." });
+    const clientePorCorreo = await Cliente.findOne({ where: { email } });
+    if (clientePorCorreo) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "El correo electrónico ya está registrado.",
+        data: null,
+      });
     }
 
-    //Verificar si ya el numero existe
-    const clienteExistenteNumero = await Cliente.findOne({
+    const clientePorTelefono = await Cliente.findOne({
       where: { numberPhone },
     });
-
-    if (clienteExistenteNumero) {
-      return res.status(400).json({ mensaje: "El numero ya existe." });
+    if (clientePorTelefono) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "El número de teléfono ya está registrado.",
+        data: null,
+      });
     }
 
     const uuidQr = uuidv4();
@@ -84,61 +92,69 @@ const postCliente = async (req, res) => {
       currentQr: `/getInfoCliente/${uuidQr}`,
     });
 
-    const uuid = uuidv4();
-
-    const newDeudaCliente = await DeudaCliente.create({
-      uuid,
+    await DeudaCliente.create({
+      uuid: uuidv4(),
       uuidCliente: newCliente.uuid,
       uuidColmadero,
       totalDebito: 0,
       notes: "",
     });
 
-    // Crear la deuda del cliente
-    res.status(201).json({
-      mensaje: "Cliente creado",
+    return res.status(201).json({
+      success: true,
+      mensaje: "Cliente creado exitosamente.",
       data: newCliente,
     });
   } catch (error) {
-    console.error(error); // para consola
-    res.status(500).json({
-      mensaje: "Error al crear el cliente",
+    return res.status(500).json({
+      success: false,
+      mensaje:
+        "Ocurrió un error al registrar el cliente. Verifique los datos enviados.",
+      data: null,
+      camposEsperados: ["name", "email", "numberPhone", "uuidColmadero"],
       error: error.message,
-      detalles: error.errors || null,
     });
   }
 };
 
 const getInfoClienteQr = async (req, res) => {
   try {
-    //Obtengo el uuidQr del cliente de la url
     const { uuidQr } = req.params;
 
-    //Busco el cliente en la base de datos
-    const cliente = await Cliente.findOne({
-      where: { uuidQr },
-    });
+    const cliente = await Cliente.findOne({ where: { uuidQr } });
 
-    //Verifico si el cliente existe
     if (!cliente) {
-      return res.status(404).json({ mensaje: "Cliente no encontrado" });
-    }
-
-    //Verifico si el clinete ha aceptado los terminos y condiciones
-    if (!cliente.accept_terms_conditions) {
-      return res.status(400).json({
-        mensaje: "El cliente no ha aceptado los terminos y condiciones",
+      return res.status(404).json({
+        success: false,
+        mensaje:
+          "No se encontró ningún cliente con el código QR proporcionado.",
+        cliente: null,
+        deuda: null,
       });
     }
 
-    res.status(200).json({
-      mensaje: "Cliente encontrado",
-      cliente: cliente,
-      deuda: "Informacion de la deuda",
+    if (!cliente.accept_terms_conditions) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "El cliente aún no ha aceptado los términos y condiciones.",
+        cliente: null,
+        deuda: null,
+        redirigirA: `/aceptar-terminos/${uuidQr}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      mensaje: "Información del cliente recuperada exitosamente.",
+      cliente,
+      deuda: "Información de la deuda disponible próximamente.",
     });
   } catch (error) {
-    res.status(500).json({
-      mensaje: "Error al obtener los colmaderos",
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al recuperar los datos del cliente mediante el QR.",
+      cliente: null,
+      deuda: null,
       error: error.message,
     });
   }
@@ -146,89 +162,106 @@ const getInfoClienteQr = async (req, res) => {
 
 const postAceptTermsConditions = async (req, res) => {
   try {
-    const { uuidQr } = req.params;
+    const { uuidQr } = req.body;
 
     const cliente = await Cliente.findOne({ where: { uuidQr } });
 
     if (!cliente) {
-      return res.status(404).json({ mensaje: "Cliente no encontrado" });
+      return res.status(404).json({
+        success: false,
+        mensaje: "Cliente no encontrado.",
+        yaAcepto: false,
+        redirigirA: null,
+      });
     }
 
     if (cliente.accept_terms_conditions) {
-      // Ya aceptó
       return res.status(200).json({
+        success: true,
         yaAcepto: true,
-        mensaje: "Ya aceptaste los términos y condiciones.",
+        mensaje: "Ya habías aceptado los términos y condiciones.",
         redirigirA: `/getInfoCliente/${uuidQr}`,
       });
     }
 
-    // Si no ha aceptado, lo marcamos como aceptado
     cliente.accept_terms_conditions = true;
     cliente.acceptance_date = new Date();
     await cliente.save();
 
     return res.status(200).json({
+      success: true,
       yaAcepto: true,
       mensaje: "Términos y condiciones aceptados correctamente.",
       redirigirA: `/getInfoCliente/${uuidQr}`,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ mensaje: "Error del servidor" });
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error del servidor al registrar la aceptación de términos.",
+      yaAcepto: false,
+      redirigirA: null,
+      error: error.message,
+    });
   }
 };
-
-
 
 const postClientesByUuidColmadero = async (req, res) => {
   try {
     const colmadero = req.colmadero;
 
-    console.log("Colmadero en getClientesByUuidColmadero: ", colmadero);
-
     const page = parseInt(req.body.page) || 1;
     const limit = parseInt(req.body.limit) || 10;
     const offset = (page - 1) * limit;
 
-    // Total de clientes
     const total = await Cliente.count({
       where: { uuidColmadero: colmadero.uuid },
     });
 
-    // Obtener los clientes paginados
     const clientes = await Cliente.findAll({
       where: { uuidColmadero: colmadero.uuid },
       limit,
       offset,
-      include: [
-        {
-          model: DeudaCliente,
-          attributes: ["totalDebito"],
-        },
-      ],
+      include: [{ model: DeudaCliente, attributes: ["totalDebito"] }],
     });
 
-    if (clientes.length === 0) {
-      return res.status(404).json({ mensaje: "No se encontraron clientes" });
+    if (!clientes.length) {
+      return res.status(404).json({
+        success: false,
+        mensaje: "No se encontraron clientes en esta página.",
+        clientes: [],
+        meta: {
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
+          hasMore: false,
+        },
+      });
     }
 
     const totalPages = Math.ceil(total / limit);
-    const hasMore = page < totalPages;
 
-    res.status(200).json({
-      mensaje: "Clientes encontrados",
-      clientes: clientes,
+    return res.status(200).json({
+      success: true,
+      mensaje: "Clientes recuperados correctamente.",
+      clientes,
       meta: {
         total,
         page,
         totalPages,
-        hasMore,
+        hasMore: page < totalPages,
       },
     });
   } catch (error) {
-    res.status(500).json({
-      mensaje: "Error al obtener los clientes",
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al obtener la lista de clientes.",
+      clientes: [],
+      meta: {
+        total: 0,
+        page: 1,
+        totalPages: 0,
+        hasMore: false,
+      },
       error: error.message,
     });
   }
@@ -237,30 +270,31 @@ const postClientesByUuidColmadero = async (req, res) => {
 const postClienteByName = async (req, res) => {
   try {
     const { name } = req.body;
-
     const colmadero = req.colmadero;
 
     const cliente = await Cliente.findOne({
       where: { name, uuidColmadero: colmadero.uuid },
-      include: [
-        {
-          model: DeudaCliente,
-          attributes: ["totalDebito"],
-        },
-      ],
+      include: [{ model: DeudaCliente, attributes: ["totalDebito"] }],
     });
 
     if (!cliente) {
-      return res.status(404).json({ mensaje: "Cliente no encontrado" });
+      return res.status(404).json({
+        success: false,
+        mensaje: "No se encontró un cliente con ese nombre.",
+        cliente: null,
+      });
     }
 
-    res.status(200).json({
-      mensaje: "Cliente encontrado",
+    return res.status(200).json({
+      success: true,
+      mensaje: "Cliente encontrado correctamente.",
       cliente,
     });
   } catch (error) {
-    res.status(500).json({
-      mensaje: "Error al obtener el cliente",
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error inesperado al buscar al cliente por nombre.",
+      cliente: null,
       error: error.message,
     });
   }
@@ -272,4 +306,5 @@ export default {
   postCliente,
   getInfoClienteQr,
   postClienteByName,
+  postAceptTermsConditions,
 };
