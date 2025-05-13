@@ -144,6 +144,41 @@ const getInfoClienteQr = async (req, res) => {
   }
 };
 
+const postAceptTermsConditions = async (req, res) => {
+  try {
+    const { uuidQr } = req.params;
+
+    const cliente = await Cliente.findOne({ where: { uuidQr } });
+
+    if (!cliente) {
+      return res.status(404).json({ mensaje: "Cliente no encontrado" });
+    }
+
+    if (cliente.accept_terms_conditions) {
+      // Ya aceptó
+      return res.status(200).json({
+        yaAcepto: true,
+        mensaje: "Ya aceptaste los términos y condiciones.",
+        redirigirA: `/getInfoCliente/${uuidQr}`,
+      });
+    }
+
+    // Si no ha aceptado, lo marcamos como aceptado
+    cliente.accept_terms_conditions = true;
+    cliente.acceptance_date = new Date();
+    await cliente.save();
+
+    return res.status(200).json({
+      yaAcepto: true,
+      mensaje: "Términos y condiciones aceptados correctamente.",
+      redirigirA: `/getInfoCliente/${uuidQr}`,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error del servidor" });
+  }
+};
+
 
 
 const postClientesByUuidColmadero = async (req, res) => {
