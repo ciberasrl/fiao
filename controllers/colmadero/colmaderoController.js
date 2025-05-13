@@ -3,154 +3,182 @@ import { v4 as uuidv4 } from "uuid";
 
 const getNameColmadero = async (req, res) => {
   try {
-    // Obtener el UUID del colmadero de las cookies
-    // Este UUID se crea al iniciar sesión y se guarda en la cookie
     const uuid = req.cookies.uuid;
 
-    // Verfico si el UUID está presente en las cookies
     if (!uuid) {
       return res.status(400).json({
-        mensaje: "UUID no proporcionado en la cookie",
+        success: false,
+        mensaje: "UUID no proporcionado en la cookie.",
+        data: null,
       });
     }
-    // Busco el colmadero en la base de datos utilizando el UUID
-    const colmadero = await Colmadero.findOne({
-      where: {
-        uuid,
-      },
-    });
-    // Verifico si el colmadero existe
+
+    const colmadero = await Colmadero.findOne({ where: { uuid } });
+
     if (!colmadero) {
-      return res.status(404).json({ mensaje: "Colmadero no encontrado" });
+      return res.status(404).json({
+        success: false,
+        mensaje: "Colmadero no encontrado.",
+        data: null,
+      });
     }
-    // Verifico si el colmadero está activo (statusId: 1)
+
     if (colmadero.statusId !== 1) {
-      return res.status(403).json({ mensaje: "Colmadero no está activo" });
+      return res.status(403).json({
+        success: false,
+        mensaje: "Este colmadero no está activo actualmente.",
+        data: null,
+      });
     }
-    //Si ha pasado todas las verificaciones, devuelvo el nombre del colmadero
+
     return res.status(200).json({
-      mensaje: "Colmadero encontrado",
+      success: true,
+      mensaje: "Colmadero encontrado correctamente.",
       data: { name: colmadero.name },
     });
   } catch (error) {
-    console.error("Error en getNameColmadero:", error.message);
-    return res.status(500).json({ mensaje: "Error interno del servidor" });
+    console.error("Error en getNameColmadero:", error);
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error interno del servidor al obtener el nombre del colmadero.",
+      data: null,
+      error: error.message,
+    });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const getColmaderos = async (req, res) => {
   try {
-    const comaderos = await Colmadero.findAll();
+    const colmaderos = await Colmadero.findAll();
 
-    if (comaderos.length === 0) {
-      return res.status(404).json({ mensaje: "No se encontraron colmaderos" });
+    if (colmaderos.length === 0) {
+      return res.status(404).json({
+        success: false,
+        mensaje: "No se encontraron colmaderos registrados.",
+        data: [],
+      });
     }
 
-    res
-      .status(200)
-      .json({ mensaje: "Colmaderos encontrados", data: comaderos });
+    return res.status(200).json({
+      success: true,
+      mensaje: "Colmaderos recuperados correctamente.",
+      data: colmaderos,
+    });
   } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener los colmaderos", error });
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al obtener los colmaderos.",
+      data: [],
+      error: error.message,
+    });
   }
 };
 
-/**
- * @description Crea un nuevo colmadero con los datos proporcionados en el cuerpo de la solicitud.
- * @route POST /api/colmadero
- * @param {string} name - Nombre del colmadero
- * @param {string} email - Correo electrónico
- * @param {string} password - Contraseña
- * @returns {Object} El colmadero recién creado o mensaje de error.
- */
 const postColmadero = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const newColmadero = await Colmadero.create({
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "Faltan datos requeridos para crear el colmadero.",
+        data: null,
+      });
+    }
+
+    const nuevoColmadero = await Colmadero.create({
       name,
       email,
       password,
-      statusId: 2, // Estado por defecto: inactivo o pendiente
+      statusId: 2,
       uuid: uuidv4(),
       token: uuidv4(),
     });
 
-    res.status(201).json({ mensaje: "Colmadero creado", data: newColmadero });
+    return res.status(201).json({
+      success: true,
+      mensaje: "Colmadero creado correctamente.",
+      data: nuevoColmadero,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al crear el colmadero", error: error.message });
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al crear el colmadero.",
+      data: null,
+      error: error.message,
+    });
   }
 };
 
-/**
- * @description Actualiza el nombre de un colmadero utilizando su UUID.
- * @route PUT /api/colmadero/update-name
- * @param {string} name - Nuevo nombre del colmadero
- * @param {string} uuid - UUID del colmadero a actualizar
- * @returns {string} Mensaje indicando si se actualizó correctamente o si no fue encontrado.
- */
 const updateNameColmadero = async (req, res) => {
   try {
     const { name, uuid } = req.body;
 
-    await Colmadero.update({ name }, { where: { uuid } }).then((result) => {
-      if (result[0] === 0) {
-        return res.status(404).json({ mensaje: "Colmadero no encontrado" });
-      }
-      res.status(200).json({ mensaje: "Colmadero actualizado" });
+    if (!name || !uuid) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "Faltan datos requeridos para actualizar el nombre.",
+      });
+    }
+
+    const resultado = await Colmadero.update({ name }, { where: { uuid } });
+
+    if (resultado[0] === 0) {
+      return res.status(404).json({
+        success: false,
+        mensaje: "Colmadero no encontrado o nombre no modificado.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      mensaje: "Nombre del colmadero actualizado correctamente.",
     });
   } catch (error) {
-    res.status(500).json({
-      mensaje: "Error al actualizar el colmadero",
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al actualizar el nombre del colmadero.",
       error: error.message,
     });
   }
 };
 
-/**
- * @description Activa un colmadero estableciendo su estado a activo (statusId: 1).
- * @route POST /api/colmadero/activar/:uuid
- * @param {string} uuid - UUID del colmadero a activar
- * @returns {string} Mensaje indicando si se activó correctamente o si no fue encontrado.
- */
 const postActivarColmadero = async (req, res) => {
   try {
     const uuid = req.params.uuid;
 
-    await Colmadero.update({ statusId: 1 }, { where: { uuid } }).then(
-      (result) => {
-        if (result[0] === 0) {
-          return res.status(404).json({ mensaje: "Colmadero no encontrado" });
-        }
-        res.status(200).json({ mensaje: "Colmadero activado" });
-      }
+    if (!uuid) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "UUID del colmadero no proporcionado.",
+      });
+    }
+
+    const resultado = await Colmadero.update(
+      { statusId: 1 },
+      { where: { uuid } }
     );
+
+    if (resultado[0] === 0) {
+      return res.status(404).json({
+        success: false,
+        mensaje: "Colmadero no encontrado o ya estaba activo.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      mensaje: "Colmadero activado correctamente.",
+    });
   } catch (error) {
-    res.status(500).json({
-      mensaje: "Error al activar el colmadero",
+    return res.status(500).json({
+      success: false,
+      mensaje: "Error al activar el colmadero.",
       error: error.message,
     });
   }
 };
 
-// Exportar las funciones para su uso en las rutas
 export default {
   getColmaderos,
   postColmadero,
