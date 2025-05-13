@@ -2,38 +2,45 @@ import Colmadero from "../models/colmadero.js";
 
 const getUuidColmadero = async (req, res, next) => {
   try {
-    //Obtengo el uuidColmadero de las cookies
+    // Obtengo el uuidColmadero de las cookies
     const uuidColmadero = req.cookies.uuidColmadero;
 
-    // Verifico si el uuidColmadero esta en la cookie
+    // Verifico si el uuidColmadero está presente en las cookies
     if (!uuidColmadero) {
       return res.status(400).json({
+        success: false,
         mensaje: "UUID del colmadero no encontrado en las cookies",
+        data: null,
       });
     }
 
-    //Busco el colmadero en la base de datos
+    // Busco el colmadero en la base de datos
     const colmadero = await Colmadero.findOne({
       where: { uuid: uuidColmadero },
-      attributes: ["uuid"],
+      attributes: ["uuid", "name", "statusId"], // Puedes agregar más atributos si es necesario
     });
 
-    //Verifico si el colmadero existe
+    // Verifico si el colmadero existe
     if (!colmadero) {
       return res.status(404).json({
+        success: false,
         mensaje: "Colmadero no encontrado",
+        data: null,
       });
     }
 
-    // Lo agregas al objeto request para que esté disponible en la siguiente función
+    // Agrego el colmadero al objeto request para que esté disponible en la siguiente función
     req.colmadero = colmadero.dataValues;
 
-    next(); // Llama a la siguiente función en la cadena de middleware
+    // Paso al siguiente middleware o controlador
+    next();
   } catch (error) {
     console.error("Error en getUuidColmadero:", error.message);
     return res.status(500).json({
+      success: false,
       mensaje: "Error al procesar la cookie",
       error: error.message,
+      data: null,
     });
   }
 };
