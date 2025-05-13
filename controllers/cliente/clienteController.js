@@ -124,6 +124,13 @@ const getInfoClienteQr = async (req, res) => {
       return res.status(404).json({ mensaje: "Cliente no encontrado" });
     }
 
+    //Verifico si el clinete ha aceptado los terminos y condiciones
+    if (!cliente.accept_terms_conditions) {
+      return res.status(400).json({
+        mensaje: "El cliente no ha aceptado los terminos y condiciones",
+      });
+    }
+
     res.status(200).json({
       mensaje: "Cliente encontrado",
       cliente: cliente,
@@ -136,6 +143,8 @@ const getInfoClienteQr = async (req, res) => {
     });
   }
 };
+
+
 
 const postClientesByUuidColmadero = async (req, res) => {
   try {
