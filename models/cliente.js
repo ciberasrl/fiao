@@ -43,5 +43,12 @@ const Cliente = db.define("cliente", {
   statusId: {
     type: DataTypes.INTEGER,
   },
+  accept_terms_conditions: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  acceptance_date: {
+    type: DataTypes.DATE,
+  },
 });
 export default Cliente;
