@@ -9,21 +9,15 @@ const getNombreScoreCliente = async (req, res) => {
 
   try {
     //Obtengo el uuid
-    const uuidColmadero = req.uuidColmadero;
+    const colmadero = req.colmadero;
     //Verifico si el uuidColmadero existe
-    const colmadero = await Colmadero.findOne({
-      where: { uuid: uuidColmadero },
-    });
 
-    //Verifico si el colmadero existe
-    if (!colmadero) {
-      return res.status(404).json({ mensaje: "Colmadero no encontrado" });
-    }
+    console.log("Colmadero en el get nombre: ", colmadero);
 
     //Busco los ultimos clientes del colmadero
     //Limito a 4 clientes
     const clientes = await Cliente.findAll({
-      where: { uuidColmadero },
+      where: { uuidColmadero: colmadero.uuid },
       limit: 4,
       order: [["createdAt", "DESC"]],
       attributes: ["name", "reliability"],
@@ -143,28 +137,24 @@ const getInfoClienteQr = async (req, res) => {
   }
 };
 
-const getClientesByUuidColmadero = async (req, res) => {
+const postClientesByUuidColmadero = async (req, res) => {
   try {
-    const uuidColmadero = req.uuidColmadero;
+    const colmadero = req.colmadero;
 
-    const colmadero = await Colmadero.findOne({
-      where: { uuid: uuidColmadero },
-    });
+    console.log("Colmadero en getClientesByUuidColmadero: ", colmadero);
 
-    if (!colmadero) {
-      return res.status(404).json({ mensaje: "Colmadero no encontrado" });
-    }
-
-    const page = parseInt(req.params.page) || 1;
-    const limit = parseInt(req.params.limit) || 10;
+    const page = parseInt(req.body.page) || 1;
+    const limit = parseInt(req.body.limit) || 10;
     const offset = (page - 1) * limit;
 
     // Total de clientes
-    const total = await Cliente.count({ where: { uuidColmadero } });
+    const total = await Cliente.count({
+      where: { uuidColmadero: colmadero.uuid },
+    });
 
     // Obtener los clientes paginados
     const clientes = await Cliente.findAll({
-      where: { uuidColmadero },
+      where: { uuidColmadero: colmadero.uuid },
       limit,
       offset,
       include: [
@@ -200,9 +190,11 @@ const getClientesByUuidColmadero = async (req, res) => {
   }
 };
 
+
+
 export default {
   getNombreScoreCliente,
-  getClientesByUuidColmadero,
+  postClientesByUuidColmadero,
   postCliente,
   getInfoClienteQr,
 };
