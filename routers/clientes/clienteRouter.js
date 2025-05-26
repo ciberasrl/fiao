@@ -8,7 +8,7 @@ import clientesController from "../../controllers/cliente/clienteController.js";
 router.get(
   "/nombre-score",
   getColmaderoByCookie,
-  clientesController.getNombreScoreCliente
+  clientesController.getUltimos4Clientes
 );
 
 // Crear un nuevo cliente
@@ -17,11 +17,21 @@ router.post("/", getColmaderoByCookie, clientesController.postCliente);
 // Obtener información de un cliente por su código QR
 router.get("/getInfoCliente/:uuidQr", clientesController.getInfoClienteQr);
 
-// Obtener clientes por UUID del colmadero con paginación
-router.get(
-  "/page/:page/limit/:limit",
+// Aceptar términos y condiciones por parte del cliente
+router.post("/aceptar-terminos", clientesController.postAceptTermsConditions);
+
+// Obtener clientes por UUID del colmadero con paginación (cambiar a POST si así lo deseas)
+router.post(
+  "/listado",
   getColmaderoByCookie,
   clientesController.postClientesByUuidColmadero
+);
+
+// Buscar cliente por nombre
+router.post(
+  "/buscar-por-nombre",
+  getColmaderoByCookie,
+  clientesController.postClienteByName
 );
 
 export default router;

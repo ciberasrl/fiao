@@ -1,15 +1,31 @@
 import Cliente from "../../models/cliente.js";
-import Colmadero from "../../models/colmadero.js";
 import DeudaCliente from "../../models/deudaCliente.js";
 import { v4 as uuidv4 } from "uuid";
 
-const getNombreScoreCliente = async (req, res) => {
+//Obtiene los ultimis 4 clientes y su score
+const getUltimos4Clientes = async (req, res) => {
   try {
     const colmadero = req.colmadero;
 
-    const clientes = await Cliente.findAll({
+    if (!colmadero || !colmadero.uuid) {
+      return res.status(400).json({
+        success: false,
+        mensaje: "No se encontró el colmadero en la solicitud.",
+        data: [],
+        hasMore: false,
+      });
+    }
+
+    console.log("ME ESTAN LLAMANDO");
+
+    const limit = parseInt(req.query.limit) || 4;
+    const page = parseInt(req.query.page) || 1;
+    const offset = (page - 1) * limit;
+
+    const { count, rows: clientes } = await Cliente.findAndCountAll({
       where: { uuidColmadero: colmadero.uuid },
-      limit: 4,
+      limit,
+      offset,
       order: [["createdAt", "DESC"]],
       attributes: ["name", "reliability"],
     });
@@ -17,46 +33,35 @@ const getNombreScoreCliente = async (req, res) => {
     if (!clientes.length) {
       return res.status(404).json({
         success: false,
-        mensaje: "No se encontraron clientes registrados recientemente.",
+        mensaje: "No se encontraron clientes registrados.",
         data: [],
         hasMore: false,
       });
     }
 
+    const hasMore = offset + limit < count;
+
     return res.status(200).json({
       success: true,
       mensaje: "Clientes recuperados correctamente.",
       data: clientes,
-      hasMore: clientes.length === 4,
+      hasMore,
     });
   } catch (error) {
+    console.error(error); // log interno
     return res.status(500).json({
       success: false,
-      mensaje:
-        "Error inesperado al recuperar los nombres y score de los clientes.",
+      mensaje: "Error interno al recuperar los clientes.",
       data: [],
       hasMore: false,
-      error: error.message,
     });
   }
 };
 
 const postCliente = async (req, res) => {
   try {
-    const uuidColmadero = req.uuidColmadero;
+    const colmadero = req.colmadero;
     const { name, email, numberPhone } = req.body;
-
-    const colmadero = await Colmadero.findOne({
-      where: { uuid: uuidColmadero },
-    });
-
-    if (!colmadero) {
-      return res.status(400).json({
-        success: false,
-        mensaje: "El colmadero proporcionado no existe.",
-        data: null,
-      });
-    }
 
     const clientePorCorreo = await Cliente.findOne({ where: { email } });
     if (clientePorCorreo) {
@@ -79,12 +84,14 @@ const postCliente = async (req, res) => {
     }
 
     const uuidQr = uuidv4();
+
+    console.log("El uuid del comladero es: ", colmadero.uuid);
     const newCliente = await Cliente.create({
       name,
       email,
       numberPhone,
       reliability: 0,
-      uuidColmadero,
+      uuidColmadero: colmadero.uuid,
       uuid: uuidv4(),
       token: uuidv4(),
       statusId: 2,
@@ -95,7 +102,7 @@ const postCliente = async (req, res) => {
     await DeudaCliente.create({
       uuid: uuidv4(),
       uuidCliente: newCliente.uuid,
-      uuidColmadero,
+      uuidColmadero: colmadero.uuid,
       totalDebito: 0,
       notes: "",
     });
@@ -300,7 +307,7 @@ const postClienteByName = async (req, res) => {
 };
 
 export default {
-  getNombreScoreCliente,
+  getUltimos4Clientes,
   postClientesByUuidColmadero,
   postCliente,
   getInfoClienteQr,

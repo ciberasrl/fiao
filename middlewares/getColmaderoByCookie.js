@@ -11,6 +11,7 @@ const getUuidColmadero = async (req, res, next) => {
         success: false,
         mensaje: "UUID del colmadero no encontrado en las cookies",
         data: null,
+        redirigirA: "/login",
       });
     }
 

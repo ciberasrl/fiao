@@ -3,25 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const getNameColmadero = async (req, res) => {
   try {
-    const uuid = req.cookies.uuid;
-
-    if (!uuid) {
-      return res.status(400).json({
-        success: false,
-        mensaje: "UUID no proporcionado en la cookie.",
-        data: null,
-      });
-    }
-
-    const colmadero = await Colmadero.findOne({ where: { uuid } });
-
-    if (!colmadero) {
-      return res.status(404).json({
-        success: false,
-        mensaje: "Colmadero no encontrado.",
-        data: null,
-      });
-    }
+    const colmadero = req.colmadero;
 
     if (colmadero.statusId !== 1) {
       return res.status(403).json({
@@ -51,6 +33,8 @@ const getColmaderos = async (req, res) => {
   try {
     const colmaderos = await Colmadero.findAll();
 
+    console.log(req);
+
     if (colmaderos.length === 0) {
       return res.status(404).json({
         success: false,
@@ -77,6 +61,8 @@ const getColmaderos = async (req, res) => {
 const postColmadero = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+
 
     if (!name || !email || !password) {
       return res.status(400).json({

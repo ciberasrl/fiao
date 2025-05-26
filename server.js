@@ -24,7 +24,6 @@ const startServer = async () => {
 
     //Helper para actualizar el totalMes a 0 cada mes
     resetTotalMes();
-    
 
     app.listen(port, () => {
       console.log(

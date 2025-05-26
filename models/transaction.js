@@ -5,6 +5,7 @@ const Transaction = db.define("transaction", {
   uuid: {
     type: DataTypes.UUID,
     allowNull: false,
+    unique: true,
   },
   uuidColmadero: {
     type: DataTypes.UUID,

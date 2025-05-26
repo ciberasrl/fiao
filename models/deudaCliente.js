@@ -5,13 +5,14 @@ const DeudaCliente = db.define("deudaCliente", {
   uuid: {
     type: DataTypes.STRING(30),
     allowNull: false,
+    unique: true,
   },
   uuidCliente: {
-    type: DataTypes.STRING(30),
+    type: DataTypes.UUID,
     allowNull: false,
   },
   uuidColmadero: {
-    type: DataTypes.STRING(30),
+    type: DataTypes.UUID,
     allowNull: false,
   },
   totalDebito: {

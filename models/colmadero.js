@@ -8,6 +8,7 @@ const Colmadero = db.define(
     uuid: {
       type: DataTypes.UUID,
       allowNull: false,
+      unique: true,
     },
     name: {
       type: DataTypes.STRING(30),

@@ -1,14 +1,14 @@
 import { DataTypes } from "sequelize";
 import db from "../config/db.js";
-import { MAX } from "uuid";
 
 const Cliente = db.define("cliente", {
   uuid: {
-    type: DataTypes.STRING(30),
+    type: DataTypes.UUID,
     allowNull: false,
+    unique: true,
   },
   uuidColmadero: {
-    type: DataTypes.STRING(30),
+    type: DataTypes.UUID,
     allowNull: false,
   },
   name: {

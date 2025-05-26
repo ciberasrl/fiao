@@ -3,11 +3,12 @@ import db from "../config/db.js";
 
 const HistoricoMensual = db.define("historicoMensual", {
   uuid: {
-    type: DataTypes.STRING(30),
+    type: DataTypes.UUID,
     allowNull: false,
+    unique: true,
   },
   uuidColmadero: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   mes: {

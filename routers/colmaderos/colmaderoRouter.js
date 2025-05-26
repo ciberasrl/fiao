@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 
 import colmaderosController from "../../controllers/colmadero/colmaderoController.js";
+// router.get("/login", colmaderosController.LoginColmadero);
 router.get("/getColmaderos", colmaderosController.getColmaderos);
 router.post("/postColmadero", colmaderosController.postColmadero);
 router.put("/putNameColmadero", colmaderosController.updateNameColmadero);

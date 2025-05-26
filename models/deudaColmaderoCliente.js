@@ -5,9 +5,10 @@ const DeudaColmaderoCliente = db.define("deudaColmaderoCliente", {
   uuid: {
     type: DataTypes.STRING(30),
     allowNull: false,
+    unique: true,
   },
   uuidColmadero: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   totalMes: {
