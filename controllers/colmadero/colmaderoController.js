@@ -1,4 +1,4 @@
-import Colmadero from "../../models/colmadero.js";
+import Colmadero from "../../src/models/colmadero.js";
 import { v4 as uuidv4 } from "uuid";
 
 const getNameColmadero = async (req, res) => {

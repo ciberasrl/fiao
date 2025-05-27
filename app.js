@@ -6,7 +6,7 @@ import statusRouter from "./routers/status/statusRouter.js";
 import colmaderoRouter from "./routers/colmaderos/colmaderoRouter.js";
 import clienteRouter from "./routers/clientes/clienteRouter.js";
 import authRouter from "./routers/auth/auth.js";
-import "./models/realciones.js";
+import "./src/models/realciones.js";
 import listEndpoints  from "express-list-endpoints";
 
 dotenv.config();

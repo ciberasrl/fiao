@@ -1,5 +1,5 @@
-import Cliente from "../../models/cliente.js";
-import DeudaCliente from "../../models/deudaCliente.js";
+import Cliente from "../../src/models/cliente.js";
+import DeudaCliente from "../../src/models/deudaCliente.js";
 import { v4 as uuidv4 } from "uuid";
 
 //Obtiene los ultimis 4 clientes y su score

@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import DeudaColmaderoCliente from "../models/deudaColmaderoCliente.js";
+import DeudaColmaderoCliente from "../src/models/deudaColmaderoCliente.js";
 import chalk from "chalk";
 
 const resetTotalMes = () => {
@@ -16,7 +16,7 @@ const resetTotalMes = () => {
       }
     },
     {
-      timezone: "America/Santo_Domingo", 
+      timezone: "America/Santo_Domingo",
     }
   );
 };

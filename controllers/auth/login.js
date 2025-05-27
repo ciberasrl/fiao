@@ -1,4 +1,4 @@
-import colmadero from "../../models/colmadero.js";
+import colmadero from "../../src/models/colmadero.js";
 import bcrypt from "bcrypt";
 
 const postLoginColmadero = async (req, res) => {
