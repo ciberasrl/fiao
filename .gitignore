@@ -1,2 +1,4 @@
 /.env
 /fiaoDb.sqlite
+/node_modules
+/test

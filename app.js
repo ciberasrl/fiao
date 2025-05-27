@@ -7,24 +7,11 @@ import colmaderoRouter from "./routers/colmaderos/colmaderoRouter.js";
 import clienteRouter from "./routers/clientes/clienteRouter.js";
 import authRouter from "./routers/auth/auth.js";
 import "./models/realciones.js";
-import cors from "cors";
+import listEndpoints  from "express-list-endpoints";
 
 dotenv.config();
 
 const app = express();
-
-if (process.env.NODE_ENV !== "production") {
-  app.use(cors({ origin: "http://127.0.0.1:5500" }));
-}
-// const cors = require("cors");
-
-app.use(
-  cors({
-    origin: "http://127.0.0.1:5500", // O "*", si solo pruebas local
-    credentials: true,
-  })
-);
-app.options("*", cors()); // Para preflight requests
 
 // Middleware
 app.use(express.json());
@@ -37,5 +24,8 @@ app.use("/api/cliente", clienteRouter);
 app.use("/api/auth", authRouter);
 
 app.use("/", NotFund);
+
+const endpoints = listEndpoints(app);
+console.log("Rutas registradas:", endpoints);
 
 export default app;
