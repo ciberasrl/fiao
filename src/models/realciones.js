@@ -3,7 +3,7 @@ import Colmadero from "./colmadero.js";
 import DeudaCliente from "./deudaCliente.js";
 import DeudaColmaderoCliente from "./deudaColmaderoCliente.js";
 import HistoricoMensual from "./historicoMensual.js";
-import Status from "./Status.js";
+import Status from "./status.js";
 import Transaction from "./transaction.js";
 
 // === Relaciones de Status ===
